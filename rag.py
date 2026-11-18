@@ -1,7 +1,10 @@
 import os
 
+from dotenv import load_dotenv
+from google import genai
 from sentence_transformers import SentenceTransformer
 
+load_dotenv()  # reads GEMINI_API_KEY from the .env file
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
 
@@ -62,3 +65,23 @@ def search(question, chunks, chunk_vectors, top=3):
     for i in best:
         results.append(chunks[i])
     return results
+
+
+# Chapter 8: find the right chunks, then ask Gemini to answer from them
+def answer(question, chunks, chunk_vectors):
+    found = search(question, chunks, chunk_vectors)
+
+    context = ""
+    for chunk in found:
+        context = context + "From " + chunk["source"] + ":\n" + chunk["text"] + "\n\n"
+
+    prompt = f"""Answer the question using only the handbook passages below.
+If the answer is not in the passages, say that you don't know.
+Say which file the answer comes from.
+
+{context}
+Question: {question}"""
+
+    client = genai.Client()
+    response = client.models.generate_content(model="gemini-flash-latest", contents=prompt)
+    return response.text
