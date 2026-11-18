@@ -11,3 +11,14 @@ def load_documents(folder):
                 text = file.read()
             documents.append({"source": name, "text": text})
     return documents
+
+
+# Chapter 4: one chunk per paragraph
+def split_into_chunks(documents):
+    chunks = []
+    for document in documents:
+        for paragraph in document["text"].split("\n\n"):
+            paragraph = paragraph.strip()
+            if paragraph != "":
+                chunks.append({"source": document["source"], "text": paragraph})
+    return chunks
