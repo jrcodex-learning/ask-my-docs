@@ -2,6 +2,7 @@ import os
 
 from dotenv import load_dotenv
 from google import genai
+from pypdf import PdfReader
 from sentence_transformers import SentenceTransformer
 
 load_dotenv()  # reads GEMINI_API_KEY from the .env file
@@ -9,14 +10,22 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 
 
 # Chapter 3: read every .txt file in a folder
+# Chapter 11: and every .pdf file, one chunk per page
 def load_documents(folder):
     documents = []
     for name in sorted(os.listdir(folder)):
+        path = os.path.join(folder, name)
         if name.endswith(".txt"):
-            path = os.path.join(folder, name)
             with open(path, encoding="utf-8") as file:
                 text = file.read()
-            documents.append({"source": name, "text": text})
+        elif name.endswith(".pdf"):
+            pages = []
+            for page in PdfReader(path).pages:
+                pages.append(page.extract_text())
+            text = "\n\n".join(pages)
+        else:
+            continue
+        documents.append({"source": name, "text": text})
     return documents
 
 
