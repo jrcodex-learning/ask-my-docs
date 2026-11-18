@@ -22,3 +22,20 @@ def split_into_chunks(documents):
             if paragraph != "":
                 chunks.append({"source": document["source"], "text": paragraph})
     return chunks
+
+
+# Chapter 5: find the chunk that shares the most words with the question
+def keyword_search(question, chunks):
+    question_words = question.lower().replace("?", "").split()
+    best_chunk = None
+    best_score = 0
+    for chunk in chunks:
+        chunk_words = chunk["text"].lower().split()
+        score = 0
+        for word in question_words:
+            if word in chunk_words:
+                score = score + 1
+        if score > best_score:
+            best_score = score
+            best_chunk = chunk
+    return best_chunk
