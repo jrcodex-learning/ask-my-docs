@@ -1,5 +1,9 @@
 import os
 
+from sentence_transformers import SentenceTransformer
+
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
 
 # Chapter 3: read every .txt file in a folder
 def load_documents(folder):
@@ -39,3 +43,22 @@ def keyword_search(question, chunks):
             best_score = score
             best_chunk = chunk
     return best_chunk
+
+
+# Chapter 7: turn every chunk into numbers, once
+def embed_chunks(chunks):
+    texts = []
+    for chunk in chunks:
+        texts.append(chunk["text"])
+    return model.encode(texts)
+
+
+# Chapter 7: find the chunks whose meaning is closest to the question
+def search(question, chunks, chunk_vectors, top=3):
+    question_vector = model.encode(question)
+    scores = model.similarity(question_vector, chunk_vectors)[0]
+    best = scores.argsort(descending=True)[:top]
+    results = []
+    for i in best:
+        results.append(chunks[i])
+    return results
